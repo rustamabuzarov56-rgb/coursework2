@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from src.headhunter_api import HeadHunterAPI
-
+import pytest
 
 
 class TestHeadHunterAPI(unittest.TestCase):
@@ -11,37 +11,35 @@ class TestHeadHunterAPI(unittest.TestCase):
     def test_get_vacancies_success(self, mock_requests):
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {'vacancies': ['Job1', 'Job2']}
-
+        mock_response.json.return_value = {
+            "items": [
+                {"id": "1", "name": "Разработчик"},
+                {"id": "2", "name": "QA инженер"}
+            ]
+        }
 
         mock_requests.get.return_value = mock_response
 
         api = HeadHunterAPI()
-        result = api.get_vacancies()
+        result = api.get_vacancies(keyword="Developer")
 
-        self.assertEqual(result, {'vacancies': ['Job1', 'Job2']})
-        mock_requests.get.assert_called_once_with(
-            'https://api.hh.ru/vacancies',
-            headers={"User-Agent": "MyCourseWorkApp/1.0 (rustamabuzarov56@gmail.com)"}
-        )
+        assert len(result) == 2
+        assert result[0]["name"] == "Разработчик"
+        assert result[1]["name"] == "QA инженер"
 
-    @patch("src.headhunter_api.requests")
-    def test_get_vacancies_failure(self, mock_requests):
+    @patch("src.headhunter_api.requests.get")
+    def test_get_vacancies_failure(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 404
-        mock_response.json.return_value = {"message": "Not found"}
+        mock_response.text = "Not Found"
+        mock_get.return_value = mock_response
 
-        mock_requests.get.return_value = mock_response
 
-        api = HeadHunterAPI()
-        with self.assertRaises(Exception):
-            api.get_vacancies()
+        hh_api = HeadHunterAPI()
+        with pytest.raises(Exception) as excinfo:
+            hh_api.get_vacancies(keyword="nonexistent_job")
 
-        mock_requests.get.assert_called_once_with(
-            'https://api.hh.ru/vacancies',
-            headers={"User-Agent": "MyCourseWorkApp/1.0 (rustamabuzarov56@gmail.com)"}
-                                                 )
-
+        assert "Ошибка подключения 404 Not Found" in str(excinfo.value)
 
 
 
