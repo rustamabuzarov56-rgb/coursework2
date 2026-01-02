@@ -1,91 +1,45 @@
+from abc import ABCMeta, abstractmethod
+from typing import Any, Dict, List
+import json
 
-class Vacancy:
-    """Класс для работы с вакансиями"""
-    __slots__ = ("title", "salary", "description", "company")
 
-    def __init__(self, title, salary, description, company):
-        """Конструктор класса Vacancy"""
-        self.title = self.__validate_title(title)
-        self.salary = self.__validate_salary(salary)
-        self.description = self.__validate_description(description)
-        self.company = self.__validate_company(company)
+class FileHandler(metaclass=ABCMeta):
+    """
+    Абстрактный класс для работы с файлами
+    """
 
-    def __str__(self):
-        """Возвращает читаемое представление объекта"""
-        return f"Вакансия {self.title}, {self.salary}"
+    def __init__(self, filename: str):
+        self._filename = filename
 
-    # Магические методы для сравнения вакансий по зарплате
-    def __lt__(self, other):
-        """Определяет порядок следования вакансий по размеру зарплаты"""
-        return self.salary < other.salary
+    @abstractmethod
+    def read_data(self) -> List[Any]:
+        """Читает данные из файла"""
+        pass
 
-    def __le__(self, other):
-        """Определяет отношение "меньше или равно" для вакансий по зарплате"""
-        return self.salary <= other.salary
+    @abstractmethod
+    def write_data(self, data: List[Any]) -> None:
+        """Записывает данные в файл"""
+        pass
 
-    def __ge__(self, other):
-        """Определяет отношение "больше или равно" для вакансий по зарплате"""
-        return self.salary >= other.salary
 
-    def __eq__(self, other):
-        """Определяет равенство вакансий по зарплате"""
-        return self.salary == other.salary
+class JsonFileHandler(FileHandler):
+    """
+    Клас для работы с JSON файлами
+    """
 
-    def __ne__(self, other):
-        """Определяет неравенство вакансий по зарплате"""
-        return self.salary != other.salary
+    def __init__(self, filename: str = 'data.json'):
+        super().__init__(filename)
 
-    # Приватные методы валидации данных
-    def __validate_title(self, value):
-        """Приватный метод валидации названия вакансии.
-           Проверяет, что оно является непустой строкой"""
-        if not isinstance(value, str) or len(value.strip()) == 0:
-            raise ValueError("Название вакансии должно быть строкой и не пустым")
-        return value
+    def read_data(self) -> List[Dict]:
+        try:
+            with open(self._filename, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return []
 
-    def __validate_salary(self, value):
-        """Приватный метод валидации зарплаты.
-           Проверяет, что зарплата является неотрицательным числом"""
-        if not isinstance(value, (int, float)) or value < 0:
-            raise ValueError("Зарплата должна быть неотрицательным числом")
-        return value
+    def write_data(self, data: List[Dict]) -> None:
+        existing_data = self.read_data()
+        unique_data = {d['title']: d for d in existing_data + data}.values()  # Удаляем дубликаты
+        with open(self._filename, 'w') as f:
+            json.dump(list(unique_data), f, indent=4)
 
-    def __validate_description(self, value):
-        """Приватный метод валидации описания вакансии.
-           Проверяет, что описание является непустой строкой"""
-        if not isinstance(value, str) or len(value.strip()) == 0:
-            raise ValueError("Описание вакансии должно быть строкой и не пустым")
-        return value
-
-    def __validate_company(self, value):
-        """Приватный метод валидации компании.
-           Проверяет, что название компании является непустой строкой"""
-        if not isinstance(value, str) or len(value.strip()) == 0:
-            raise ValueError("Название компании должно быть строкой и не пустым")
-        return value
-
-try:
-    vak1 = Vacancy(
-        title="Разработчик",
-        salary=80000,
-        description="Создание веб-сайтов",
-        company="Интернет-сервисы"
-    )
-except ValueError as err:
-    print(err)
-
-try:
-    vak2 = Vacancy(
-        title="Дизайнер",
-        salary=-50000,  # Некорректное значение зарплаты
-        description="Графический дизайн",
-        company="Студия дизайна"
-    )
-except ValueError as err:
-    print(err)
-
-# Попытка сравнения вакансий
-if vak2 is not None:
-    print(vak1 < vak2)
-else:
-    print("Вторая вакансия не создана из-за ошибки валидации")
