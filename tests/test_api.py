@@ -1,7 +1,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from src.headhunter_api import HeadHunterAPI
+from src.api_module import HeadHunterAPI
 import pytest
 
 
