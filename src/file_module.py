@@ -24,7 +24,7 @@ class FileHandler(metaclass=ABCMeta):
 
 class JsonFileHandler(FileHandler):
     """
-    Клас для работы с JSON файлами
+    Класс для работы с JSON файлами
     """
 
     def __init__(self, filename: str = 'data.json'):
@@ -39,7 +39,7 @@ class JsonFileHandler(FileHandler):
 
     def write_data(self, data: List[Dict]) -> None:
         existing_data = self.read_data()
-        unique_data = {d['title']: d for d in existing_data + data}.values()  # Удаляем дубликаты
-        with open(self._filename, 'w') as f:
+        unique_data = {d['title']: d for d in existing_data + data}.values()
+        with open(self._filename, 'w', encoding='UTF-8') as f:
             json.dump(list(unique_data), f, indent=4)
 

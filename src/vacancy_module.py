@@ -10,16 +10,15 @@ class Vacancy:
     salary_to: Optional[int]
     employer: str
 
-
     def __post_init__(self):
         if not isinstance(self.title, str):
             raise ValueError("Название вакансии должно быть строкой.")
 
     def __lt__(self, other):
-        return self.salary_from or 0 < other.salary_from or 0
+        my_salary = self.salary_from if self.salary_from is not None else 0
+        other_salary = other.salary_from if other.salary_from is not None else 0
+        return my_salary < other_salary
 
     def __repr__(self):
         return f'Vacancy(title="{self.title}", salary={self.salary_from}-{self.salary_to}, employer="{self.employer}")'
 
-v = Vacancy('Менеджер проектов', 60000, 80000, 'ООО Яблоко')
-print(v)
