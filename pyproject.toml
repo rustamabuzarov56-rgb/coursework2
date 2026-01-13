@@ -14,7 +14,9 @@ dependencies = [
     "isort (>=7.0.0,<8.0.0)",
     "mypy (>=1.19.1,<2.0.0)",
     "coverage (>=7.13.0,<8.0.0)",
-    "responses (>=0.25.8,<0.26.0)"
+    "responses (>=0.25.8,<0.26.0)",
+    "cov (>=0.1.2,<0.2.0)",
+    "types-requests (>=2.32.4.20260107,<3.0.0.0)"
 ]
 [tool.black]
 line-length = 119
@@ -36,3 +38,11 @@ exclude = "venv, tests"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+test = [
+    "pytest-cov (>=7.0.0,<8.0.0)"
+]
+dev = [
+    "flake8 (>=7.3.0,<8.0.0)"
+]
